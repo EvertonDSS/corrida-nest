@@ -4,14 +4,12 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { join } from 'path';
-
-// 1. Importe o tipo específico da plataforma Express
 import { NestExpressApplication } from '@nestjs/platform-express';
 
 async function bootstrap() {
-  // 2. Especifique o tipo <NestExpressApplication> aqui
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
+  // O caminho agora aponta para a pasta que foi copiada para dentro da 'dist'
   app.useStaticAssets(join(__dirname, '..', 'swagger-ui-dist'), {
     prefix: '/api/docs/',
   });
