@@ -3,16 +3,12 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
-import { join } from 'path';
-import { NestExpressApplication } from '@nestjs/platform-express';
 
 async function bootstrap() {
-  const app = await NestFactory.create<NestExpressApplication>(AppModule);
+  const app = await NestFactory.create(AppModule);
 
-  // O caminho agora aponta para a pasta que foi copiada para dentro da 'dist'
-  app.useStaticAssets(join(__dirname, '..', 'swagger-ui-dist'), {
-    prefix: '/api/docs/',
-  });
+  // Define que todas as rotas da sua aplicação começarão com '/api'
+  app.setGlobalPrefix('api');
 
   const config = new DocumentBuilder()
     .setTitle('Corrida API')
@@ -20,7 +16,10 @@ async function bootstrap() {
     .setVersion('1.0')
     .build();
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api/docs', app, document);
+  
+  // O caminho do Swagger agora é apenas 'docs', pois o prefixo 'api' já é global.
+  // URL final: /api/docs
+  SwaggerModule.setup('docs', app, document);
 
   await app.listen(process.env.PORT || 3000);
 }
