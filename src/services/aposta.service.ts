@@ -12,11 +12,16 @@ export class ApostaService {
   ) {}
 
   async buscarTodos(): Promise<Aposta[]> {
-    return await this.apostaRepository.find();
+    return await this.apostaRepository.find({
+      relations: ["cavalo", "campeonato", "apostador"],
+    });
   }
 
   async buscarPorId(id: number): Promise<Aposta | null> {
-    return await this.apostaRepository.findOne({ where: { id } });
+    return await this.apostaRepository.findOne({
+      where: { id },
+      relations: ["cavalo", "campeonato", "apostador"],
+    });
   }
 
   async criar(dto: CreateApostaDto) {
