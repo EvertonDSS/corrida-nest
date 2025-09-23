@@ -3,7 +3,7 @@ import { BaseEntity } from "./base.entity";
 import { Campeonato } from "./campeonato.entity";
 import { Rodada } from "./rodada.entity";
 
-@Entity("rodadas_detalhes")
+@Entity("rodadas")
 export class Rodadas extends BaseEntity {
   @Column()
   campeonatoId?: number;
@@ -13,10 +13,10 @@ export class Rodadas extends BaseEntity {
   campeonato!: Campeonato;
 
   @Column("decimal", { precision: 10, scale: 2 })
-  valorRodada?: number;
+  valorRodada: number = 0;
 
   @Column("decimal", { precision: 5, scale: 2 })
-  porcentagem: number;
+  porcentagem: number = 0;
 
   @Column()
   rodadaId?: number;
@@ -26,14 +26,11 @@ export class Rodadas extends BaseEntity {
   rodada!: Rodada;
 
   @Column("decimal", { precision: 10, scale: 2 })
-  valorPremio?: number;
+  valorPremio: number = 0;
 
-  constructor(valorRodada: number, porcentagem: number, valorPremio: number) {
-    super();
-
-    this.valorRodada = valorRodada;
-    this.porcentagem = porcentagem;
+  calcularValorPremio() {
     this.valorPremio =
-      valorPremio ?? valorRodada - valorRodada * (porcentagem / 100);
+      this.valorRodada - this.valorRodada * (this.porcentagem / 100);
+    console.log("this.valorPremio", this.valorPremio);
   }
 }

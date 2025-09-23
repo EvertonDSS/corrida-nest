@@ -1,5 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
+import { CreateApostaDto } from "src/dto/criar-aposta.dto";
 import { Aposta } from "src/entity/aposta.entity";
 import { Repository } from "typeorm";
 
@@ -14,8 +15,19 @@ export class ApostaService {
     return await this.apostaRepository.find();
   }
 
-  async criar(aposta: Aposta): Promise<Aposta> {
-    return await this.apostaRepository.save(aposta);
+  async buscarPorId(id: number): Promise<Aposta | null> {
+    return await this.apostaRepository.findOne({ where: { id } });
+  }
+
+  async criar(dto: CreateApostaDto) {
+    const aposta = new Aposta();
+    aposta.cavaloId = dto.cavaloId;
+    aposta.campeonatoId = dto.campeonatoId;
+    aposta.apostadorId = dto.apostadorId;
+    aposta.total = dto.total;
+    aposta.valorUnitario = dto.valorUnitario;
+    aposta.porcentagem = dto.porcentagem;
+    return this.apostaRepository.save(aposta);
   }
 
   async atualizar(aposta: Aposta): Promise<Aposta> {

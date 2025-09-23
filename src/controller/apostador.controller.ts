@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, HttpCode } from "@nestjs/common";
+import { Controller, Get, Post, Body, HttpCode, Param } from "@nestjs/common";
 import { ApostadorService } from "../services/apostador.service";
 import { Apostador } from "../entity/apostador.entity";
 import { ApiBody, ApiCreatedResponse, ApiOperation } from "@nestjs/swagger";
@@ -29,5 +29,10 @@ export class ApostadorController {
   })
   async criar(@Body() apostador: Apostador): Promise<Apostador> {
     return await this.apostadorService.criar(apostador);
+  }
+
+  @Get(":id")
+  async buscarPorId(@Param("id") id: number) {
+    return await this.apostadorService.buscarPorId(id);
   }
 }

@@ -11,21 +11,21 @@ export class Aposta extends BaseEntity {
 
   @ManyToOne(() => Cavalo, (cavalo) => cavalo.apostas)
   @JoinColumn({ name: "cavaloId" })
-  cavalo!: Cavalo;
+  cavalo?: Cavalo;
 
   @Column()
   campeonatoId?: number;
 
   @ManyToOne(() => Campeonato, (campeonato) => campeonato.apostas)
   @JoinColumn({ name: "campeonatoId" })
-  campeonato!: Campeonato;
+  campeonato?: Campeonato;
 
   @Column()
   apostadorId?: number;
 
   @ManyToOne(() => Apostador, (apostador) => apostador.apostas)
   @JoinColumn({ name: "apostadorId" })
-  apostador!: Apostador;
+  apostador?: Apostador;
 
   @Column("decimal", { precision: 10, scale: 2 })
   total?: number;
