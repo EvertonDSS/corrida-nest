@@ -43,4 +43,5 @@ export class ApostaService {
   async deletar(id: number): Promise<void> {
     await this.apostaRepository.delete(id);
   }
+
 }

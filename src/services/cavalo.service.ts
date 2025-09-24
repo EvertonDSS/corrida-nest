@@ -25,4 +25,5 @@ export class CavaloService {
   async criar(cavalo: Cavalo): Promise<Cavalo> {
     return await this.cavaloRepository.save(cavalo);
   }
+
 }

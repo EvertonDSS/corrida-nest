@@ -29,4 +29,5 @@ export class ApostadorService {
   async criar(apostador: Apostador): Promise<Apostador> {
     return await this.apostadorRepository.save(apostador);
   }
+
 }

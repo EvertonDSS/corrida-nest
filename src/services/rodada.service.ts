@@ -71,4 +71,19 @@ export class RodadaService {
       rodadas: rodadasFormatadas,
     };
   }
+
+  async buscarRodadasPorCampeonato(campeonatoId: number): Promise<Rodadas[]> {
+    const rodadas = await this.rodadasRepository.find({
+      where: { campeonatoId },
+      relations: ["rodada", "campeonato"],
+    });
+
+    if (!rodadas || rodadas.length === 0) {
+      throw new NotFoundException(
+        `Rodadas não encontradas para o campeonato ${campeonatoId}`,
+      );
+    }
+
+    return rodadas;
+  }
 }
