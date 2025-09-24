@@ -9,7 +9,14 @@ import {
 } from "@nestjs/common";
 import { CampeonatoService } from "../services/campeonato.service";
 import { Campeonato } from "../entity/campeonato.entity";
-import { ApiBody, ApiCreatedResponse, ApiOperation } from "@nestjs/swagger";
+import { Apostador } from "../entity/apostador.entity";
+import { Aposta } from "../entity/aposta.entity";
+import {
+  ApiBody,
+  ApiCreatedResponse,
+  ApiOperation,
+  ApiOkResponse,
+} from "@nestjs/swagger";
 
 @Controller("/campeonato")
 export class CampeonatoController {
@@ -47,5 +54,29 @@ export class CampeonatoController {
       throw new NotFoundException("Campeonato não encontrado");
     }
     return campeonato;
+  }
+
+  @Get(":id/apostadores")
+  @ApiOkResponse({ type: [Apostador] })
+  @ApiOperation({ summary: "Listar apostadores de um campeonato" })
+  async buscarApostadoresDoCampeonato(
+    @Param("id") id: number,
+  ): Promise<Apostador[]> {
+    return await this.campeonatoService.buscarApostadoresDoCampeonato(id);
+  }
+
+  @Get(":id/apostador/:apostadorId/apostas")
+  @ApiOkResponse({ type: [Aposta] })
+  @ApiOperation({
+    summary: "Listar apostas de um apostador em um campeonato específico",
+  })
+  async buscarApostasDoApostadorNoCampeonato(
+    @Param("id") campeonatoId: number,
+    @Param("apostadorId") apostadorId: number,
+  ): Promise<Aposta[]> {
+    return await this.campeonatoService.buscarApostasDoApostadorNoCampeonato(
+      campeonatoId,
+      apostadorId,
+    );
   }
 }
