@@ -1,8 +1,13 @@
-import { Controller, Get, Post, Body } from "@nestjs/common";
+import { Controller, Get, Post, Body, Param } from "@nestjs/common";
 import { RodadaService } from "../services/rodada.service";
 import { Rodada } from "../entity/rodada.entity";
 import { Rodadas } from "src/entity/rodadas.entity";
-import { ApiBody, ApiCreatedResponse, ApiOperation } from "@nestjs/swagger";
+import {
+  ApiBody,
+  ApiCreatedResponse,
+  ApiOperation,
+  ApiOkResponse,
+} from "@nestjs/swagger";
 import { plainToInstance } from "class-transformer";
 
 @Controller("/rodada")
@@ -57,5 +62,35 @@ export class RodadaController {
   @Get("/campeonato")
   async buscarPorCampeonato(): Promise<Rodada[]> {
     return await this.rodadaService.buscarPorCampeonato();
+  }
+
+  @Get("/campeonato/:id")
+  @ApiOkResponse({
+    description: "Rodadas do campeonato com nome do campeonato",
+    schema: {
+      type: "object",
+      properties: {
+        nomeCampeonato: { type: "string" },
+        rodadas: {
+          type: "array",
+          items: {
+            type: "object",
+            properties: {
+              id: { type: "number" },
+              nomeRodada: { type: "string" },
+            },
+          },
+        },
+      },
+    },
+  })
+  @ApiOperation({ summary: "Buscar rodadas de um campeonato específico" })
+  async buscarRodadasPorCampeonatoId(
+    @Param("id") campeonatoId: number,
+  ): Promise<{
+    nomeCampeonato: string;
+    rodadas: { id: number; nomeRodada: string }[];
+  }> {
+    return await this.rodadaService.buscarRodadasPorCampeonatoId(campeonatoId);
   }
 }

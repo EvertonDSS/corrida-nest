@@ -1,7 +1,8 @@
-import { Entity, Column, ManyToOne, JoinColumn } from "typeorm";
+import { Entity, Column, ManyToOne, JoinColumn, OneToMany } from "typeorm";
 import { BaseEntity } from "./base.entity";
 import { Campeonato } from "./campeonato.entity";
 import { Rodada } from "./rodada.entity";
+import { Aposta } from "./aposta.entity";
 
 @Entity("rodadas")
 export class Rodadas extends BaseEntity {
@@ -27,6 +28,9 @@ export class Rodadas extends BaseEntity {
 
   @Column("decimal", { precision: 10, scale: 2 })
   valorPremio: number = 0;
+
+  @OneToMany(() => Aposta, (aposta) => aposta.rodadas, { cascade: true })
+  apostas?: Aposta[];
 
   calcularValorPremio() {
     this.valorPremio =

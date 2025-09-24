@@ -43,4 +43,32 @@ export class RodadaService {
     }
     return rodadas;
   }
+
+  async buscarRodadasPorCampeonatoId(campeonatoId: number): Promise<{
+    nomeCampeonato: string;
+    rodadas: { id: number; nomeRodada: string }[];
+  }> {
+    const rodadas = await this.rodadasRepository.find({
+      where: { campeonatoId },
+      relations: ["rodada", "campeonato"],
+    });
+
+    if (!rodadas || rodadas.length === 0) {
+      throw new NotFoundException(
+        `Rodadas não encontradas para o campeonato ${campeonatoId}`,
+      );
+    }
+
+    const nomeCampeonato = rodadas[0].campeonato.nome || "";
+
+    const rodadasFormatadas = rodadas.map((rodada) => ({
+      id: rodada.rodada.id,
+      nomeRodada: rodada.rodada.nomeRodada || "",
+    }));
+
+    return {
+      nomeCampeonato,
+      rodadas: rodadasFormatadas,
+    };
+  }
 }

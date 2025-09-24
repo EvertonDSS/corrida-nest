@@ -19,4 +19,7 @@ export class CreateApostaDto {
 
   @ApiProperty({ description: "Porcentagem da aposta", example: 10 })
   porcentagem: number | undefined;
+
+  @ApiProperty({ description: "ID da rodada", example: 1 })
+  rodadasId: number | undefined;
 }

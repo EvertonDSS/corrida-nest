@@ -2,6 +2,7 @@ import { Entity, Column, ManyToOne, JoinColumn } from "typeorm";
 import { Cavalo } from "./cavalo.entity";
 import { Campeonato } from "./campeonato.entity";
 import { Apostador } from "./apostador.entity";
+import { Rodadas } from "./rodadas.entity";
 import { BaseEntity } from "./base.entity";
 
 @Entity("apostas")
@@ -35,4 +36,11 @@ export class Aposta extends BaseEntity {
 
   @Column("decimal", { precision: 5, scale: 2 })
   porcentagem?: number;
+
+  @Column({ name: "rodadasid" })
+  rodadasId?: number;
+
+  @ManyToOne(() => Rodadas, (rodadas) => rodadas.apostas)
+  @JoinColumn({ name: "rodadasid" })
+  rodadas?: Rodadas;
 }
