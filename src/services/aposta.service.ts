@@ -13,14 +13,26 @@ export class ApostaService {
 
   async buscarTodos(): Promise<Aposta[]> {
     return await this.apostaRepository.find({
-      relations: ["cavalo", "campeonato", "apostador", "rodadas", "rodadas.rodada"],
+      relations: [
+        "cavalo",
+        "campeonato",
+        "apostador",
+        "rodadas",
+        "rodadas.rodada",
+      ],
     });
   }
 
   async buscarPorId(id: number): Promise<Aposta | null> {
     return await this.apostaRepository.findOne({
       where: { id },
-      relations: ["cavalo", "campeonato", "apostador", "rodadas", "rodadas.rodada"],
+      relations: [
+        "cavalo",
+        "campeonato",
+        "apostador",
+        "rodadas",
+        "rodadas.rodada",
+      ],
     });
   }
 
@@ -29,8 +41,14 @@ export class ApostaService {
     aposta.cavaloId = dto.cavaloId;
     aposta.campeonatoId = dto.campeonatoId;
     aposta.apostadorId = dto.apostadorId;
-    aposta.total = await this.calcularPorcentagem(dto.porcentagem, dto.total);
-    aposta.valorUnitario = dto.valorUnitario;
+    aposta.total = this.calcularPorcentagem(
+      dto.porcentagem || 0,
+      dto.total || 0,
+    );
+    aposta.valorUnitario = this.calcularPorcentagem(
+      dto.porcentagem || 0,
+      dto.valorUnitario || 0,
+    );
     aposta.porcentagem = dto.porcentagem;
     aposta.rodadasId = dto.rodadasId;
     return this.apostaRepository.save(aposta);
@@ -44,7 +62,7 @@ export class ApostaService {
     await this.apostaRepository.delete(id);
   }
 
-  async calcularPorcentagem(porcentagem, total) : Promise<number> {
-      return porcentagem * total / 100;
+  calcularPorcentagem(porcentagem: number, total: number): number {
+    return (porcentagem * total) / 100;
   }
 }
