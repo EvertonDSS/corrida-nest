@@ -45,6 +45,6 @@ export class ApostaService {
   }
 
   async calcularPorcentagem(porcentagem, total) : Promise<number> {
-      return total - ( porcentagem * total / 100);
+      return porcentagem * total / 100;
   }
 }
