@@ -29,7 +29,7 @@ export class ApostaService {
     aposta.cavaloId = dto.cavaloId;
     aposta.campeonatoId = dto.campeonatoId;
     aposta.apostadorId = dto.apostadorId;
-    aposta.total = dto.total;
+    aposta.total = await this.calcularPorcentagem(dto.porcentagem, dto.total);
     aposta.valorUnitario = dto.valorUnitario;
     aposta.porcentagem = dto.porcentagem;
     aposta.rodadasId = dto.rodadasId;
@@ -44,4 +44,7 @@ export class ApostaService {
     await this.apostaRepository.delete(id);
   }
 
+  async calcularPorcentagem(porcentagem, total) : Promise<number> {
+      return total - ( porcentagem * total / 100);
+  }
 }
