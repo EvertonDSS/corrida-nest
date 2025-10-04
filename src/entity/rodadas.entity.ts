@@ -3,6 +3,7 @@ import { BaseEntity } from "./base.entity";
 import { Campeonato } from "./campeonato.entity";
 import { Rodada } from "./rodada.entity";
 import { Aposta } from "./aposta.entity";
+import { Tipo } from "./tipo.entity";
 
 @Entity("rodadas")
 export class Rodadas extends BaseEntity {
@@ -31,6 +32,13 @@ export class Rodadas extends BaseEntity {
 
   @OneToMany(() => Aposta, (aposta) => aposta.rodadas, { cascade: true })
   apostas?: Aposta[];
+
+  @Column({ name: "tipoid" })
+  tipoId?: number;
+
+  @ManyToOne(() => Tipo, (tipo) => tipo.rodadas)
+  @JoinColumn({ name: "tipoid" })
+  tipo?: Tipo;
 
   calcularValorPremio() {
     this.valorPremio =

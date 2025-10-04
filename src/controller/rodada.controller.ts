@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, HttpCode } from "@nestjs/common";
+import { Controller, Get, Post, Body, Param } from "@nestjs/common";
 import { RodadaService } from "../services/rodada.service";
 import { Rodada } from "../entity/rodada.entity";
 import { Rodadas } from "src/entity/rodadas.entity";
@@ -50,6 +50,7 @@ export class RodadaController {
           rodadaId: 1,
           valorRodada: 100,
           porcentagem: 10,
+          tipoId: 1,
         },
       },
     },
@@ -96,7 +97,9 @@ export class RodadaController {
 
   @Get("campeonato/:id/rodadas")
   @ApiOkResponse({ type: [Rodadas] })
-  @ApiOperation({ summary: "Buscar rodadas de um campeonato (entidade Rodadas)" })
+  @ApiOperation({
+    summary: "Buscar rodadas de um campeonato (entidade Rodadas)",
+  })
   async buscarRodadasPorCampeonato(
     @Param("id") campeonatoId: number,
   ): Promise<Rodadas[]> {

@@ -5,3 +5,5 @@ export * from "./campeonato.service";
 export * from "./cavalo.service";
 export * from "./rodada.service";
 export * from "./cleanup.service";
+export * from "./cavalo-campeonato.service";
+export * from "./tipo.service";

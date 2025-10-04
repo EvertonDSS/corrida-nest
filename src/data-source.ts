@@ -7,6 +7,8 @@ import { Rodada } from "./entity/rodada.entity";
 import { Rodadas } from "./entity/rodadas.entity";
 import { Aposta } from "./entity/aposta.entity";
 import { Cavalo } from "./entity/cavalo.entity";
+import { CavaloCampeonato } from "./entity/cavalo-campeonato.entity";
+import { Tipo } from "./entity/tipo.entity";
 
 const certPath = path.resolve(__dirname, "../certs");
 
@@ -17,7 +19,7 @@ export const AppDataSource = new DataSource({
   username: "squarecloud",
   password: "keExiI36dK12jQt1ABBlYOE2",
   database: "Corrida",
-  entities: [Apostador, Aposta, Campeonato, Rodada, Rodadas, Cavalo],
+  entities: [Apostador, Aposta, Campeonato, Rodada, Rodadas, Cavalo, CavaloCampeonato, Tipo],
   migrations: [path.join(__dirname, "./migrations/*{.ts,.js}")],
   schema: "public",
   ssl: {

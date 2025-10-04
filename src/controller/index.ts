@@ -4,3 +4,5 @@ export * from "./campeonato.controller";
 export * from "./cavalo.controller";
 export * from "./rodada.controller";
 export * from "./cleanup.controller";
+export * from "./cavalo-campeonato.controller";
+export * from "./tipo.controller";

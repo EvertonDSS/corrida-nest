@@ -2,6 +2,7 @@ import { Column, Entity, OneToMany } from "typeorm";
 import { BaseEntity } from "./base.entity";
 import { Aposta } from "./aposta.entity";
 import { Rodadas } from "./rodadas.entity";
+import { CavaloCampeonato } from "./cavalo-campeonato.entity";
 
 @Entity("campeonato")
 export class Campeonato extends BaseEntity {
@@ -16,4 +17,11 @@ export class Campeonato extends BaseEntity {
 
   @OneToMany(() => Rodadas, (rodada) => rodada.campeonato, { cascade: true })
   rodadas?: Rodadas[];
+
+  @OneToMany(
+    () => CavaloCampeonato,
+    (cavaloCampeonato) => cavaloCampeonato.campeonato,
+    { cascade: true },
+  )
+  cavaloCampeonatos?: CavaloCampeonato[];
 }
