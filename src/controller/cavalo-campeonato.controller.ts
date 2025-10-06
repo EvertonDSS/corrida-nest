@@ -17,39 +17,52 @@ export class CavaloCampeonatoController {
 
   @Get("campeonato/:id")
   @ApiOkResponse({ 
-    description: "Lista de cavalos de um campeonato agrupados por pareo",
+    description: "Lista de cavalos de um campeonato agrupados por inserção",
     schema: {
       type: "array",
       items: {
         type: "object",
         properties: {
           pareo: { type: "string", example: "01" },
-          cavalos: { type: "string", example: "Ravale - Thunder - Lightning" }
+          cavalos: { type: "string", example: "Ravale - Thunder - Lightning" },
+          grupoId: { type: "number", example: 1 },
+          cavalosDetalhados: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: {
+                id: { type: "number", example: 1 },
+                nome: { type: "string", example: "Ravale" },
+                grupoId: { type: "number", example: 1 }
+              }
+            }
+          }
         }
       }
     }
   })
-  @ApiOperation({ summary: "Listar cavalos de um campeonato específico agrupados por pareo" })
-  async buscarPorCampeonato(@Param("id") campeonatoId: number): Promise<{ pareo: string; cavalos: string }[]> {
+  @ApiOperation({ summary: "Listar cavalos de um campeonato específico agrupados por inserção" })
+  async buscarPorCampeonato(@Param("id") campeonatoId: number): Promise<{ pareo: string; cavalos: string; grupoId: number; cavalosDetalhados: { id: number; nome: string; grupoId: number }[] }[]> {
     return await this.cavaloCampeonatoService.buscarPorCampeonato(campeonatoId);
   }
 
   @Get("campeonato/:id/disponiveis")
   @ApiOkResponse({ 
-    description: "Lista de cavalos disponíveis agrupados por pareo",
+    description: "Lista de cavalos disponíveis agrupados por inserção",
     schema: {
       type: "array",
       items: {
         type: "object",
         properties: {
           pareo: { type: "string", example: "01" },
-          cavalos: { type: "string", example: "Ravale - Thunder - Lightning" }
+          cavalos: { type: "string", example: "Ravale - Thunder - Lightning" },
+          grupoId: { type: "number", example: 1 }
         }
       }
     }
   })
-  @ApiOperation({ summary: "Listar cavalos disponíveis por campeonato agrupados por pareo" })
-  async buscarCavalosDisponiveisPorCampeonato(@Param("id") campeonatoId: number): Promise<{ pareo: string; cavalos: string }[]> {
+  @ApiOperation({ summary: "Listar cavalos disponíveis por campeonato agrupados por inserção" })
+  async buscarCavalosDisponiveisPorCampeonato(@Param("id") campeonatoId: number): Promise<{ pareo: string; cavalos: string; grupoId: number }[]> {
     return await this.cavaloCampeonatoService.buscarCavalosDisponiveisPorCampeonato(campeonatoId);
   }
 
@@ -80,13 +93,23 @@ export class CavaloCampeonatoController {
     type: AdicionarCavalosCampeonatoDto,
     examples: {
       exemploCavalos: {
-        summary: "Exemplo de adição de cavalos",
+        summary: "Exemplo de adição de cavalos por pareo",
         value: {
           campeonatoId: 1,
-          cavalos: [
-            { cavaloId: 1, numeroPareo: "01" },
-            { cavaloId: 2, numeroPareo: "01" },
-            { cavaloId: 3, numeroPareo: "02" }
+          pareos: [
+            { nomePareo: "01", cavalos: [2, 4] },
+            { nomePareo: "02", cavalos: [3] }
+          ]
+        },
+      },
+      exemploMultiplosPareos: {
+        summary: "Exemplo com múltiplos pareos",
+        value: {
+          campeonatoId: 1,
+          pareos: [
+            { nomePareo: "01", cavalos: [1, 2, 3] },
+            { nomePareo: "02", cavalos: [4, 5] },
+            { nomePareo: "03", cavalos: [6] }
           ]
         },
       },

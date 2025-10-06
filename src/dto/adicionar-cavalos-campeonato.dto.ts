@@ -1,10 +1,7 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { IsString, IsNotEmpty, Matches } from "class-validator";
 
-export class CavaloPareoDto {
-  @ApiProperty({ description: "ID do cavalo", example: 1 })
-  cavaloId!: number;
-
+export class PareoDto {
   @ApiProperty({ 
     description: "Número do pareo formatado com zero à esquerda", 
     example: "01",
@@ -13,7 +10,15 @@ export class CavaloPareoDto {
   @IsString()
   @IsNotEmpty()
   @Matches(/^[0-9]{2}$/, { message: "Número do pareo deve ter exatamente 2 dígitos (ex: 01, 02, 03)" })
-  numeroPareo!: string;
+  nomePareo!: string;
+
+  @ApiProperty({ 
+    description: "Lista de IDs dos cavalos deste pareo", 
+    type: [Number],
+    example: [1, 2, 3]
+  })
+  @IsNotEmpty()
+  cavalos!: number[];
 }
 
 export class AdicionarCavalosCampeonatoDto {
@@ -21,13 +26,12 @@ export class AdicionarCavalosCampeonatoDto {
   campeonatoId!: number;
 
   @ApiProperty({ 
-    description: "Lista de cavalos com seus respectivos pareos", 
-    type: [CavaloPareoDto],
+    description: "Lista de pareos com seus respectivos cavalos", 
+    type: [PareoDto],
     example: [
-      { cavaloId: 1, numeroPareo: "01" },
-      { cavaloId: 2, numeroPareo: "01" },
-      { cavaloId: 3, numeroPareo: "02" }
+      { nomePareo: "01", cavalos: [1, 2, 3] },
+      { nomePareo: "02", cavalos: [4, 5] }
     ]
   })
-  cavalos!: CavaloPareoDto[];
+  pareos!: PareoDto[];
 }

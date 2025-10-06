@@ -21,4 +21,7 @@ export class CavaloCampeonato extends BaseEntity {
 
   @Column({ name: "numeropareo", length: 2 })
   numeroPareo?: string;
+
+  @Column({ name: "grupoid" })
+  grupoId?: number;
 }
