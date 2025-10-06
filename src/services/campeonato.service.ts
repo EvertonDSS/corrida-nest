@@ -56,7 +56,7 @@ export class CampeonatoService {
         campeonatoId,
         apostadorId,
       },
-      relations: ["cavalo", "campeonato", "rodadas", "rodadas.rodada"],
+      relations: ["campeonato", "rodadas", "rodadas.rodada"],
     });
 
     return apostas;

@@ -14,7 +14,6 @@ export class ApostaService {
   async buscarTodos(): Promise<Aposta[]> {
     return await this.apostaRepository.find({
       relations: [
-        "cavalo",
         "campeonato",
         "apostador",
         "rodadas",
@@ -27,7 +26,6 @@ export class ApostaService {
     return await this.apostaRepository.findOne({
       where: { id },
       relations: [
-        "cavalo",
         "campeonato",
         "apostador",
         "rodadas",
@@ -38,7 +36,7 @@ export class ApostaService {
 
   async criar(dto: CreateApostaDto) {
     const aposta = new Aposta();
-    aposta.cavaloId = dto.cavaloId;
+    aposta.grupoId = dto.grupoId;
     aposta.campeonatoId = dto.campeonatoId;
     aposta.apostadorId = dto.apostadorId;
     aposta.total = this.calcularPorcentagem(

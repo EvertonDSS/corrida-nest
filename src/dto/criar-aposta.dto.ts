@@ -2,8 +2,8 @@
 import { ApiProperty } from "@nestjs/swagger";
 
 export class CreateApostaDto {
-  @ApiProperty({ description: "ID do cavalo", example: 1 })
-  cavaloId: number | undefined;
+  @ApiProperty({ description: "ID do grupo de cavalos", example: 1 })
+  grupoId: number | undefined;
 
   @ApiProperty({ description: "ID do campeonato", example: 1 })
   campeonatoId: number | undefined;

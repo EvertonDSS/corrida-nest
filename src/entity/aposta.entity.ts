@@ -43,4 +43,7 @@ export class Aposta extends BaseEntity {
   @ManyToOne(() => Rodadas, (rodadas) => rodadas.apostas)
   @JoinColumn({ name: "rodadasid" })
   rodadas?: Rodadas;
+
+  @Column({ name: "grupoid" })
+  grupoId?: number;
 }

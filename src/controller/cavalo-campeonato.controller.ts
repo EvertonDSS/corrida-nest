@@ -121,6 +121,45 @@ export class CavaloCampeonatoController {
     return await this.cavaloCampeonatoService.adicionarCavalosAoCampeonato(dto);
   }
 
+  @Get("campeonato/:id/grupo/:grupoId")
+  @ApiOkResponse({
+    description: "Grupo de cavalos encontrado",
+    schema: {
+      type: "object",
+      properties: {
+        pareo: { type: "string", example: "01" },
+        cavalos: { type: "string", example: "Cav1 - Cav2" },
+        grupoId: { type: "number", example: 1 },
+        cavalosDetalhados: {
+          type: "array",
+          items: {
+            type: "object",
+            properties: {
+              id: { type: "number", example: 36 },
+              nome: { type: "string", example: "Cav1" },
+              grupoId: { type: "number", example: 1 }
+            }
+          }
+        }
+      }
+    }
+  })
+  @ApiOperation({ 
+    summary: "Buscar grupo de cavalos por campeonato e grupoId",
+    description: "Retorna todos os cavalos de um grupo específico em um campeonato. Útil para apostas onde você envia o grupoId."
+  })
+  async buscarPorCampeonatoEGrupo(
+    @Param("id") campeonatoId: number,
+    @Param("grupoId") grupoId: number,
+  ): Promise<{
+    pareo: string;
+    cavalos: string;
+    grupoId: number;
+    cavalosDetalhados: { id: number; nome: string; grupoId: number }[];
+  }> {
+    return await this.cavaloCampeonatoService.buscarPorCampeonatoEGrupo(campeonatoId, grupoId);
+  }
+
   @Delete("campeonato/:id")
   @HttpCode(200)
   @ApiOkResponse({ description: "Cavalos removidos do campeonato" })

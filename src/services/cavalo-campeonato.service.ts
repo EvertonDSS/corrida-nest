@@ -227,4 +227,63 @@ export class CavaloCampeonatoService {
       cavalosDetalhados: grupo.cavalosDetalhados,
     }));
   }
+
+  async buscarPorCampeonatoEGrupo(
+    campeonatoId: number,
+    grupoId: number,
+  ): Promise<{
+    pareo: string;
+    cavalos: string;
+    grupoId: number;
+    cavalosDetalhados: { id: number; nome: string; grupoId: number }[];
+  }> {
+    const cavalos = await this.cavaloCampeonatoRepository.find({
+      where: {
+        campeonatoId,
+        grupoId,
+      },
+      relations: ["cavalo", "campeonato"],
+      order: { id: "ASC" },
+    });
+
+    if (!cavalos || cavalos.length === 0) {
+      throw new NotFoundException(
+        `Grupo ${grupoId} não encontrado no campeonato ${campeonatoId}`,
+      );
+    }
+
+    // Agrupar cavalos do mesmo grupo
+    const grupo = cavalos.reduce(
+      (acc, cc) => {
+        const nomeCavalo = cc.cavalo?.nome || "";
+        const cavaloId = cc.cavalo?.id || 0;
+
+        acc.cavalos.push(nomeCavalo);
+        acc.cavalosDetalhados.push({
+          id: cavaloId,
+          nome: nomeCavalo,
+          grupoId: cc.grupoId || 0,
+        });
+
+        return acc;
+      },
+      {
+        pareo: cavalos[0].numeroPareo || "",
+        cavalos: [] as string[],
+        grupoId: cavalos[0].grupoId || 0,
+        cavalosDetalhados: [] as {
+          id: number;
+          nome: string;
+          grupoId: number;
+        }[],
+      },
+    );
+
+    return {
+      pareo: grupo.pareo,
+      cavalos: grupo.cavalos.join(" - "),
+      grupoId: grupo.grupoId,
+      cavalosDetalhados: grupo.cavalosDetalhados,
+    };
+  }
 }
