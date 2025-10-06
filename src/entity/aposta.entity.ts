@@ -1,5 +1,4 @@
 import { Entity, Column, ManyToOne, JoinColumn } from "typeorm";
-import { Cavalo } from "./cavalo.entity";
 import { Campeonato } from "./campeonato.entity";
 import { Apostador } from "./apostador.entity";
 import { Rodadas } from "./rodadas.entity";
@@ -7,13 +6,6 @@ import { BaseEntity } from "./base.entity";
 
 @Entity("apostas")
 export class Aposta extends BaseEntity {
-  @Column()
-  cavaloId?: number;
-
-  @ManyToOne(() => Cavalo, (cavalo) => cavalo.apostas)
-  @JoinColumn({ name: "cavaloId" })
-  cavalo?: Cavalo;
-
   @Column()
   campeonatoId?: number;
 

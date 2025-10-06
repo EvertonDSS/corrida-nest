@@ -11,13 +11,12 @@ export class ApostadorService {
   ) {}
 
   async buscarTodos(): Promise<Apostador[]> {
-    return await this.apostadorRepository.find({ relations: ["apostas"] });
+    return await this.apostadorRepository.find();
   }
 
   async buscarPorId(id: number): Promise<Apostador | null> {
     const apostador = await this.apostadorRepository.findOne({
       where: { id },
-      relations: ["apostas"],
     });
     if (!apostador) {
       throw new NotFoundException(`Apostador com id ${id} não encontrado`);
