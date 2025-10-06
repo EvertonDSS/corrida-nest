@@ -45,8 +45,11 @@ export class CavaloCampeonatoService {
         const nomeCavalo = cc.cavalo?.nome || "";
         const cavaloId = cc.cavalo?.id || 0;
 
-        if (!acc[grupoId]) {
-          acc[grupoId] = {
+        // Chave composta: grupoId + pareo para evitar conflitos
+        const chaveGrupo = `${grupoId}-${pareo}`;
+
+        if (!acc[chaveGrupo]) {
+          acc[chaveGrupo] = {
             pareo,
             cavalos: [],
             grupoId,
@@ -54,8 +57,8 @@ export class CavaloCampeonatoService {
           };
         }
 
-        acc[grupoId].cavalos.push(nomeCavalo);
-        acc[grupoId].cavalosDetalhados.push({
+        acc[chaveGrupo].cavalos.push(nomeCavalo);
+        acc[chaveGrupo].cavalosDetalhados.push({
           id: cavaloId,
           nome: nomeCavalo,
           grupoId,
@@ -113,24 +116,27 @@ export class CavaloCampeonatoService {
   ): Promise<CavaloCampeonato[]> {
     const cavalosCampeonato: CavaloCampeonato[] = [];
 
-    for (const pareo of dto.pareos) {
-      // Buscar o próximo grupoId disponível
-      const ultimoGrupo = await this.cavaloCampeonatoRepository
-        .createQueryBuilder("cc")
-        .select("MAX(cc.grupoId)", "maxGrupoId")
-        .where("cc.campeonatoId = :campeonatoId", {
-          campeonatoId: dto.campeonatoId,
-        })
-        .getRawOne();
+    // Buscar o próximo grupoId disponível uma única vez
+    const ultimoGrupo = await this.cavaloCampeonatoRepository
+      .createQueryBuilder("cc")
+      .select("MAX(cc.grupoId)", "maxGrupoId")
+      .where("cc.campeonatoId = :campeonatoId", {
+        campeonatoId: dto.campeonatoId,
+      })
+      .getRawOne();
 
-      const proximoGrupoId = (ultimoGrupo?.maxGrupoId || 0) + 1;
+    let proximoGrupoId = (ultimoGrupo?.maxGrupoId || 0) + 1;
+
+    for (const pareo of dto.pareos) {
+      // Cada pareo recebe um grupoId diferente
+      const grupoIdAtual = proximoGrupoId++;
 
       for (const cavaloId of pareo.cavalos) {
         const cavaloCampeonato = new CavaloCampeonato();
         cavaloCampeonato.campeonatoId = dto.campeonatoId;
         cavaloCampeonato.cavaloId = cavaloId;
         cavaloCampeonato.numeroPareo = pareo.nomePareo;
-        cavaloCampeonato.grupoId = proximoGrupoId;
+        cavaloCampeonato.grupoId = grupoIdAtual;
 
         cavalosCampeonato.push(cavaloCampeonato);
       }
@@ -181,8 +187,11 @@ export class CavaloCampeonatoService {
         const nomeCavalo = cc.cavalo?.nome || "";
         const cavaloId = cc.cavalo?.id || 0;
 
-        if (!acc[grupoId]) {
-          acc[grupoId] = {
+        // Chave composta: grupoId + pareo para evitar conflitos
+        const chaveGrupo = `${grupoId}-${pareo}`;
+
+        if (!acc[chaveGrupo]) {
+          acc[chaveGrupo] = {
             pareo,
             cavalos: [],
             grupoId,
@@ -190,8 +199,8 @@ export class CavaloCampeonatoService {
           };
         }
 
-        acc[grupoId].cavalos.push(nomeCavalo);
-        acc[grupoId].cavalosDetalhados.push({
+        acc[chaveGrupo].cavalos.push(nomeCavalo);
+        acc[chaveGrupo].cavalosDetalhados.push({
           id: cavaloId,
           nome: nomeCavalo,
           grupoId,
