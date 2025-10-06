@@ -16,38 +16,59 @@ export class CavaloCampeonatoController {
   }
 
   @Get("campeonato/:id")
-  @ApiOkResponse({ type: [CavaloCampeonato] })
-  @ApiOperation({ summary: "Listar cavalos de um campeonato específico" })
-  async buscarPorCampeonato(@Param("id") campeonatoId: number): Promise<CavaloCampeonato[]> {
-    return await this.cavaloCampeonatoService.buscarPorCampeonato(campeonatoId);
-  }
-
-  @Get("campeonato/:id/disponiveis")
   @ApiOkResponse({ 
-    description: "Lista de cavalos disponíveis no formato pareo - cavalo",
+    description: "Lista de cavalos de um campeonato agrupados por pareo",
     schema: {
       type: "array",
       items: {
         type: "object",
         properties: {
           pareo: { type: "string", example: "01" },
-          cavalo: { type: "string", example: "Ravale" }
+          cavalos: { type: "string", example: "Ravale - Thunder - Lightning" }
         }
       }
     }
   })
-  @ApiOperation({ summary: "Listar cavalos disponíveis por campeonato no formato pareo - cavalo" })
-  async buscarCavalosDisponiveisPorCampeonato(@Param("id") campeonatoId: number): Promise<{ pareo: string; cavalo: string }[]> {
+  @ApiOperation({ summary: "Listar cavalos de um campeonato específico agrupados por pareo" })
+  async buscarPorCampeonato(@Param("id") campeonatoId: number): Promise<{ pareo: string; cavalos: string }[]> {
+    return await this.cavaloCampeonatoService.buscarPorCampeonato(campeonatoId);
+  }
+
+  @Get("campeonato/:id/disponiveis")
+  @ApiOkResponse({ 
+    description: "Lista de cavalos disponíveis agrupados por pareo",
+    schema: {
+      type: "array",
+      items: {
+        type: "object",
+        properties: {
+          pareo: { type: "string", example: "01" },
+          cavalos: { type: "string", example: "Ravale - Thunder - Lightning" }
+        }
+      }
+    }
+  })
+  @ApiOperation({ summary: "Listar cavalos disponíveis por campeonato agrupados por pareo" })
+  async buscarCavalosDisponiveisPorCampeonato(@Param("id") campeonatoId: number): Promise<{ pareo: string; cavalos: string }[]> {
     return await this.cavaloCampeonatoService.buscarCavalosDisponiveisPorCampeonato(campeonatoId);
   }
 
   @Get("campeonato/:id/pareo/:pareo")
-  @ApiOkResponse({ type: [CavaloCampeonato] })
-  @ApiOperation({ summary: "Listar cavalos de um pareo específico de um campeonato" })
+  @ApiOkResponse({ 
+    description: "Cavalos de um pareo específico agrupados",
+    schema: {
+      type: "object",
+      properties: {
+        pareo: { type: "string", example: "01" },
+        cavalos: { type: "string", example: "Ravale - Thunder - Lightning" }
+      }
+    }
+  })
+  @ApiOperation({ summary: "Listar cavalos de um pareo específico de um campeonato agrupados" })
   async buscarPorPareo(
     @Param("id") campeonatoId: number,
     @Param("pareo") numeroPareo: string,
-  ): Promise<CavaloCampeonato[]> {
+  ): Promise<{ pareo: string; cavalos: string }> {
     return await this.cavaloCampeonatoService.buscarPorPareo(campeonatoId, numeroPareo);
   }
 

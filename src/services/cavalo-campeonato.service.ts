@@ -17,10 +17,11 @@ export class CavaloCampeonatoService {
     });
   }
 
-  async buscarPorCampeonato(campeonatoId: number): Promise<CavaloCampeonato[]> {
+  async buscarPorCampeonato(campeonatoId: number): Promise<{ pareo: string; cavalos: string }[]> {
     const cavalos = await this.cavaloCampeonatoRepository.find({
       where: { campeonatoId },
       relations: ["cavalo", "campeonato"],
+      order: { numeroPareo: "ASC" }
     });
 
     if (!cavalos || cavalos.length === 0) {
@@ -29,16 +30,43 @@ export class CavaloCampeonatoService {
       );
     }
 
-    return cavalos;
+    // Agrupar cavalos por pareo
+    const agrupados = cavalos.reduce((acc, cc) => {
+      const pareo = cc.numeroPareo || "";
+      const nomeCavalo = cc.cavalo?.nome || "";
+      
+      if (!acc[pareo]) {
+        acc[pareo] = [];
+      }
+      acc[pareo].push(nomeCavalo);
+      return acc;
+    }, {} as Record<string, string[]>);
+
+    // Converter para array com cavalos concatenados
+    return Object.entries(agrupados).map(([pareo, nomesCavalos]) => ({
+      pareo,
+      cavalos: nomesCavalos.join(" - ")
+    }));
   }
 
-  async buscarPorPareo(campeonatoId: number, numeroPareo: string): Promise<CavaloCampeonato[]> {
+  async buscarPorPareo(campeonatoId: number, numeroPareo: string): Promise<{ pareo: string; cavalos: string }> {
     const cavalos = await this.cavaloCampeonatoRepository.find({
       where: { campeonatoId, numeroPareo },
       relations: ["cavalo", "campeonato"],
     });
 
-    return cavalos;
+    if (!cavalos || cavalos.length === 0) {
+      throw new NotFoundException(
+        `Cavalos não encontrados para o pareo ${numeroPareo} do campeonato ${campeonatoId}`,
+      );
+    }
+
+    const nomesCavalos = cavalos.map(cc => cc.cavalo?.nome || "").filter(nome => nome);
+    
+    return {
+      pareo: numeroPareo,
+      cavalos: nomesCavalos.join(" - ")
+    };
   }
 
   async adicionarCavalosAoCampeonato(dto: AdicionarCavalosCampeonatoDto): Promise<CavaloCampeonato[]> {
@@ -67,7 +95,7 @@ export class CavaloCampeonatoService {
     });
   }
 
-  async buscarCavalosDisponiveisPorCampeonato(campeonatoId: number): Promise<{ pareo: string; cavalo: string }[]> {
+  async buscarCavalosDisponiveisPorCampeonato(campeonatoId: number): Promise<{ pareo: string; cavalos: string }[]> {
     const cavalos = await this.cavaloCampeonatoRepository.find({
       where: { campeonatoId },
       relations: ["cavalo"],
@@ -80,9 +108,22 @@ export class CavaloCampeonatoService {
       );
     }
 
-    return cavalos.map(cc => ({
-      pareo: cc.numeroPareo || "",
-      cavalo: cc.cavalo?.nome || ""
+    // Agrupar cavalos por pareo
+    const agrupados = cavalos.reduce((acc, cc) => {
+      const pareo = cc.numeroPareo || "";
+      const nomeCavalo = cc.cavalo?.nome || "";
+      
+      if (!acc[pareo]) {
+        acc[pareo] = [];
+      }
+      acc[pareo].push(nomeCavalo);
+      return acc;
+    }, {} as Record<string, string[]>);
+
+    // Converter para array com cavalos concatenados
+    return Object.entries(agrupados).map(([pareo, nomesCavalos]) => ({
+      pareo,
+      cavalos: nomesCavalos.join(" - ")
     }));
   }
 }
