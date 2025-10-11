@@ -94,6 +94,9 @@ export class CampeonatoService {
       where: { campeonatoId },
     });
 
+    // Cache para valores ajustados por rodada
+    const valoresPorRodada = new Map<number, { ajustado: number; premio: number }>();
+
     // Filtrar e enriquecer apostas
     const apostasProcessadas = await Promise.all(
       apostas.map(async (aposta) => {
@@ -138,58 +141,87 @@ export class CampeonatoService {
         const rodada = aposta.rodadas;
         if (!rodada) {
           return {
-            ...aposta,
+            id: aposta.id,
+            campeonatoId: aposta.campeonatoId,
+            campeonato: aposta.campeonato,
+            apostadorId: aposta.apostadorId,
+            apostador: aposta.apostador,
+            total: aposta.total,
+            valorUnitario: aposta.valorUnitario,
+            porcentagem: aposta.porcentagem,
+            rodadasId: aposta.rodadasId,
+            rodadas: null,
+            grupoId: aposta.grupoId,
             cavalos: cavalosString,
-            valorRodadaAjustado: null,
-            valorPremioAjustado: null,
           };
         }
 
-        // Buscar todas as apostas desta rodada para calcular deduções
-        const apostasRodada = await this.apostaRepository.find({
-          where: {
-            campeonatoId,
-            rodadasId: rodada.id,
-          },
-        });
+        // Verificar se já calculamos os valores desta rodada
+        if (!valoresPorRodada.has(rodada.id)) {
+          // Buscar todas as apostas desta rodada para calcular deduções
+          const apostasRodada = await this.apostaRepository.find({
+            where: {
+              campeonatoId,
+              rodadasId: rodada.id,
+            },
+          });
 
-        // Calcular valor total a deduzir
-        let valorDeduzido = 0;
-        for (const apostaRodada of apostasRodada) {
-          const cavalosGrupo = await this.dataSource
-            .getRepository(CavaloCampeonato)
-            .find({
-              where: {
-                campeonatoId,
-                grupoId: apostaRodada.grupoId,
-              },
-            });
+          // Calcular valor total a deduzir (usar Set para evitar duplicatas por grupo)
+          const gruposProcessados = new Set<number>();
+          let valorDeduzido = 0;
 
-          const excecoesGrupo = excecoes.filter(
-            (e) => e.grupoId === apostaRodada.grupoId,
-          );
+          for (const apostaRodada of apostasRodada) {
+            // Pular se já processamos este grupo
+            if (gruposProcessados.has(apostaRodada.grupoId!)) {
+              continue;
+            }
+            gruposProcessados.add(apostaRodada.grupoId!);
 
-          const disponiveis = cavalosGrupo.filter(
-            (c) => !excecoesGrupo.some((exc) => exc.cavaloId === c.cavaloId),
-          );
+            const cavalosGrupo = await this.dataSource
+              .getRepository(CavaloCampeonato)
+              .find({
+                where: {
+                  campeonatoId,
+                  grupoId: apostaRodada.grupoId,
+                },
+              });
 
-          // Só deduz se não tiver nenhum cavalo disponível
-          if (disponiveis.length === 0 && cavalosGrupo.length > 0) {
-            valorDeduzido += Number(apostaRodada.valorUnitario || 0);
+            const excecoesGrupo = excecoes.filter(
+              (e) => e.grupoId === apostaRodada.grupoId,
+            );
+
+            const disponiveis = cavalosGrupo.filter(
+              (c) => !excecoesGrupo.some((exc) => exc.cavaloId === c.cavaloId),
+            );
+
+            // Só deduz se não tiver nenhum cavalo disponível
+            if (disponiveis.length === 0 && cavalosGrupo.length > 0) {
+              // Somar TODAS as apostas deste grupo
+              const apostasDoGrupo = apostasRodada.filter(
+                (a) => a.grupoId === apostaRodada.grupoId,
+              );
+              for (const apostaDoGrupo of apostasDoGrupo) {
+                valorDeduzido += Number(apostaDoGrupo.valorUnitario || 0);
+              }
+            }
           }
+
+          // Calcular valores ajustados
+          const valorRodadaOriginal = Number(rodada.valorRodada || 0);
+          const valorRodadaAjustado = valorRodadaOriginal - valorDeduzido;
+          const porcentagem = Number(rodada.porcentagem || 0);
+          const valorPremioAjustado =
+            valorRodadaAjustado - (valorRodadaAjustado * porcentagem) / 100;
+
+          // Armazenar no cache
+          valoresPorRodada.set(rodada.id, {
+            ajustado: valorRodadaAjustado,
+            premio: valorPremioAjustado,
+          });
         }
 
-        // Calcular valores ajustados
-        const valorRodadaOriginal = Number(rodada.valorRodada || 0);
-        const valorRodadaAjustado = valorRodadaOriginal - valorDeduzido;
-        const porcentagem = Number(rodada.porcentagem || 0);
-        const valorPremioAjustado =
-          valorRodadaAjustado - (valorRodadaAjustado * porcentagem) / 100;
-
-        // Criar cópia modificável da rodada e substituir valores
-        const rodadaModificada = JSON.parse(JSON.stringify(rodada));
-        rodadaModificada.valorRodada = valorRodadaAjustado.toFixed(2);
-        rodadaModificada.valorPremio = valorPremioAjustado.toFixed(2);
+        // Recuperar valores do cache
+        const valores = valoresPorRodada.get(rodada.id)!;
         
         return {
           id: aposta.id,
@@ -201,7 +233,16 @@ export class CampeonatoService {
           valorUnitario: aposta.valorUnitario,
           porcentagem: aposta.porcentagem,
           rodadasId: aposta.rodadasId,
-          rodadas: rodadaModificada,
+          rodadas: {
+            id: rodada.id,
+            campeonatoId: rodada.campeonatoId,
+            valorRodada: valores.ajustado.toFixed(2),
+            porcentagem: rodada.porcentagem,
+            rodadaId: rodada.rodadaId,
+            rodada: rodada.rodada,
+            valorPremio: valores.premio.toFixed(2),
+            tipoId: rodada.tipoId,
+          },
           grupoId: aposta.grupoId,
           cavalos: cavalosString,
         };
