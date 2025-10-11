@@ -180,8 +180,11 @@ export class ExcecaoService {
     });
 
     if (rodada && rodada.valorRodada && rodada.porcentagem) {
-      // Recalcular valorPremio baseado no valorRodada e porcentagem da rodada
-      const novoValorPremio = (rodada.porcentagem * rodada.valorRodada) / 100;
+      // Recalcular valorPremio: valorRodada - porcentagem
+      // Ex: 4250 - (4250 * 20 / 100) = 4250 - 850 = 3400
+      const valorRodadaNum = Number(rodada.valorRodada);
+      const porcentagemNum = Number(rodada.porcentagem);
+      const novoValorPremio = valorRodadaNum - (valorRodadaNum * porcentagemNum / 100);
 
       await manager
         .createQueryBuilder()

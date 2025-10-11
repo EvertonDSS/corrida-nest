@@ -94,9 +94,6 @@ export class CampeonatoService {
       where: { campeonatoId },
     });
 
-    // Cache para valores ajustados por rodada
-    const valoresPorRodada = new Map<number, { ajustado: number; premio: number }>();
-
     // Filtrar e enriquecer apostas
     const apostasProcessadas = await Promise.all(
       apostas.map(async (aposta) => {
@@ -137,112 +134,50 @@ export class CampeonatoService {
             ? `${cavalosDoGrupo[0].numeroPareo} - ${nomes.join(" - ")}`
             : "";
 
-        // Calcular valores ajustados da rodada
+        // Calcular valorPremio correto e total da aposta
         const rodada = aposta.rodadas;
-        if (!rodada) {
-          return {
-            id: aposta.id,
-            campeonatoId: aposta.campeonatoId,
-            campeonato: aposta.campeonato,
-            apostadorId: aposta.apostadorId,
-            apostador: aposta.apostador,
-            total: aposta.total,
-            valorUnitario: aposta.valorUnitario,
-            porcentagem: aposta.porcentagem,
-            rodadasId: aposta.rodadasId,
-            rodadas: null,
-            grupoId: aposta.grupoId,
-            cavalos: cavalosString,
-          };
+        let valorPremioCalculado: string | number | undefined =
+          rodada?.valorPremio;
+        let totalCalculado: string | number | undefined = aposta.total;
+
+        if (rodada && rodada.valorRodada && rodada.porcentagem) {
+          const valorRodadaNum = Number(rodada.valorRodada);
+          const porcentagemRodadaNum = Number(rodada.porcentagem);
+          const porcentagemApostaNum = Number(aposta.porcentagem);
+
+          // valorPremio = valorRodada - (valorRodada * porcentagemRodada / 100)
+          // Ex: 2750 - (2750 * 20 / 100) = 2750 - 550 = 2200
+          valorPremioCalculado = (
+            valorRodadaNum -
+            (valorRodadaNum * porcentagemRodadaNum) / 100
+          ).toFixed(2);
+
+          // total = (valorPremio * porcentagemAposta) / 100
+          // Ex: 2200 * 100 / 100 = 2200
+          const valorPremioNum = Number(valorPremioCalculado);
+          totalCalculado = (
+            (valorPremioNum * porcentagemApostaNum) /
+            100
+          ).toFixed(2);
         }
 
-        // Verificar se já calculamos os valores desta rodada
-        if (!valoresPorRodada.has(rodada.id)) {
-          // Buscar todas as apostas desta rodada para calcular deduções
-          const apostasRodada = await this.apostaRepository.find({
-            where: {
-              campeonatoId,
-              rodadasId: rodada.id,
-            },
-          });
-
-          // Calcular valor total a deduzir (usar Set para evitar duplicatas por grupo)
-          const gruposProcessados = new Set<number>();
-          let valorDeduzido = 0;
-
-          for (const apostaRodada of apostasRodada) {
-            // Pular se já processamos este grupo
-            if (gruposProcessados.has(apostaRodada.grupoId!)) {
-              continue;
-            }
-            gruposProcessados.add(apostaRodada.grupoId!);
-
-            const cavalosGrupo = await this.dataSource
-              .getRepository(CavaloCampeonato)
-              .find({
-                where: {
-                  campeonatoId,
-                  grupoId: apostaRodada.grupoId,
-                },
-              });
-
-            const excecoesGrupo = excecoes.filter(
-              (e) => e.grupoId === apostaRodada.grupoId,
-            );
-
-            const disponiveis = cavalosGrupo.filter(
-              (c) => !excecoesGrupo.some((exc) => exc.cavaloId === c.cavaloId),
-            );
-
-            // Só deduz se não tiver nenhum cavalo disponível
-            if (disponiveis.length === 0 && cavalosGrupo.length > 0) {
-              // Somar TODAS as apostas deste grupo
-              const apostasDoGrupo = apostasRodada.filter(
-                (a) => a.grupoId === apostaRodada.grupoId,
-              );
-              for (const apostaDoGrupo of apostasDoGrupo) {
-                valorDeduzido += Number(apostaDoGrupo.valorUnitario || 0);
-              }
-            }
-          }
-
-          // Calcular valores ajustados
-          const valorRodadaOriginal = Number(rodada.valorRodada || 0);
-          const valorRodadaAjustado = valorRodadaOriginal - valorDeduzido;
-          const porcentagem = Number(rodada.porcentagem || 0);
-          const valorPremioAjustado =
-            valorRodadaAjustado - (valorRodadaAjustado * porcentagem) / 100;
-
-          // Armazenar no cache
-          valoresPorRodada.set(rodada.id, {
-            ajustado: valorRodadaAjustado,
-            premio: valorPremioAjustado,
-          });
-        }
-
-        // Recuperar valores do cache
-        const valores = valoresPorRodada.get(rodada.id)!;
-        
+        // Retornar aposta com valores calculados
         return {
           id: aposta.id,
           campeonatoId: aposta.campeonatoId,
           campeonato: aposta.campeonato,
           apostadorId: aposta.apostadorId,
           apostador: aposta.apostador,
-          total: aposta.total,
+          total: totalCalculado,
           valorUnitario: aposta.valorUnitario,
           porcentagem: aposta.porcentagem,
           rodadasId: aposta.rodadasId,
-          rodadas: {
-            id: rodada.id,
-            campeonatoId: rodada.campeonatoId,
-            valorRodada: valores.ajustado.toFixed(2),
-            porcentagem: rodada.porcentagem,
-            rodadaId: rodada.rodadaId,
-            rodada: rodada.rodada,
-            valorPremio: valores.premio.toFixed(2),
-            tipoId: rodada.tipoId,
-          },
+          rodadas: rodada
+            ? {
+                ...rodada,
+                valorPremio: valorPremioCalculado,
+              }
+            : null,
           grupoId: aposta.grupoId,
           cavalos: cavalosString,
         };
