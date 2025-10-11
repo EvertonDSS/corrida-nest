@@ -65,6 +65,24 @@ export class CampeonatoController {
     return await this.campeonatoService.buscarApostadoresDoCampeonato(id);
   }
 
+  @Get(":id/apostador/:apostadorId/v2-apostas")
+  @ApiOkResponse({ type: [Aposta] })
+  @ApiOperation({
+    summary:
+      "V2: Listar apostas considerando exceções (exclui apostas sem cavalos)",
+    description:
+      "Retorna apostas com MESMA estrutura do endpoint original, mas com valorRodada e valorPremio recalculados considerando exceções. Apostas sem cavalos disponíveis são automaticamente excluídas. NÃO modifica o banco de dados.",
+  })
+  async buscarApostasDoApostadorNoCampeonatoV2(
+    @Param("id") campeonatoId: string,
+    @Param("apostadorId") apostadorId: string,
+  ): Promise<any[]> {
+    return await this.campeonatoService.buscarApostasDoApostadorNoCampeonatoV2(
+      parseInt(campeonatoId),
+      parseInt(apostadorId),
+    );
+  }
+
   @Get(":id/apostador/:apostadorId/apostas")
   @ApiOkResponse({ type: [Aposta] })
   @ApiOperation({
