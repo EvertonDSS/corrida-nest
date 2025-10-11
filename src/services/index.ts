@@ -1,5 +1,6 @@
 export * from "./app.service";
 export * from "./aposta.service";
+export * from "./excecao.service";
 export * from "./apostador.service";
 export * from "./campeonato.service";
 export * from "./cavalo.service";

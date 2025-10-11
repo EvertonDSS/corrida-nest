@@ -1,14 +1,16 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { Repository } from "typeorm";
+import { Repository, DataSource } from "typeorm";
 import { CavaloCampeonato } from "../entity/cavalo-campeonato.entity";
 import { AdicionarCavalosCampeonatoDto } from "../dto/adicionar-cavalos-campeonato.dto";
+import { Excecao } from "../entity/excecao.entity";
 
 @Injectable()
 export class CavaloCampeonatoService {
   constructor(
     @InjectRepository(CavaloCampeonato)
     private cavaloCampeonatoRepository: Repository<CavaloCampeonato>,
+    private dataSource: DataSource,
   ) {}
 
   async buscarTodos(): Promise<CavaloCampeonato[]> {
@@ -242,7 +244,7 @@ export class CavaloCampeonatoService {
         campeonatoId,
         grupoId,
       },
-      relations: ["cavalo", "campeonato"],
+      relations: ["cavalo"],
       order: { id: "ASC" },
     });
 
@@ -252,8 +254,31 @@ export class CavaloCampeonatoService {
       );
     }
 
-    // Agrupar cavalos do mesmo grupo
-    const grupo = cavalos.reduce(
+    // Buscar exceções para este grupo
+    const excecoes = await this.dataSource.getRepository(Excecao).find({
+      where: {
+        campeonatoId,
+        grupoId,
+      },
+    });
+
+    // Criar lista de cavalos excluídos pelas exceções
+    const cavalosExcluidos = excecoes.map(excecao => excecao.cavaloId);
+
+    // Filtrar cavalos removendo os que estão nas exceções
+    const cavalosFiltrados = cavalos.filter(
+      cc => cc.cavaloId && !cavalosExcluidos.includes(cc.cavaloId)
+    );
+
+    // Se todos os cavalos foram removidos pelas exceções, retornar grupo vazio
+    if (cavalosFiltrados.length === 0) {
+      throw new NotFoundException(
+        `Grupo ${grupoId} não possui cavalos disponíveis (todos foram removidos por exceções)`,
+      );
+    }
+
+    // Agrupar cavalos do mesmo grupo (após filtro)
+    const grupo = cavalosFiltrados.reduce(
       (acc, cc) => {
         const nomeCavalo = cc.cavalo?.nome || "";
         const cavaloId = cc.cavalo?.id || 0;

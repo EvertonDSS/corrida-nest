@@ -1,4 +1,5 @@
 export * from "./aposta.controller";
+export * from "./excecao.controller";
 export * from "./apostador.controller";
 export * from "./campeonato.controller";
 export * from "./cavalo.controller";

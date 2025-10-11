@@ -149,15 +149,18 @@ export class CavaloCampeonatoController {
     description: "Retorna todos os cavalos de um grupo específico em um campeonato. Útil para apostas onde você envia o grupoId."
   })
   async buscarPorCampeonatoEGrupo(
-    @Param("id") campeonatoId: number,
-    @Param("grupoId") grupoId: number,
+    @Param("id") campeonatoId: string,
+    @Param("grupoId") grupoId: string,
   ): Promise<{
     pareo: string;
     cavalos: string;
     grupoId: number;
     cavalosDetalhados: { id: number; nome: string; grupoId: number }[];
   }> {
-    return await this.cavaloCampeonatoService.buscarPorCampeonatoEGrupo(campeonatoId, grupoId);
+    return await this.cavaloCampeonatoService.buscarPorCampeonatoEGrupo(
+      parseInt(campeonatoId), 
+      parseInt(grupoId)
+    );
   }
 
   @Delete("campeonato/:id")

@@ -95,6 +95,52 @@ export class RodadaController {
     return await this.rodadaService.buscarRodadasPorCampeonatoId(campeonatoId);
   }
 
+  @Get("v2/campeonato/:id")
+  @ApiOkResponse({
+    description: "Rodadas com valores calculados considerando exceções",
+    schema: {
+      type: "array",
+      items: {
+        type: "object",
+        properties: {
+          id: { type: "number" },
+          campeonatoId: { type: "number" },
+          rodadaId: { type: "number" },
+          porcentagem: { type: "string" },
+          valorRodadaOriginal: { type: "string", description: "Valor original do banco" },
+          valorPremioOriginal: { type: "string", description: "Prêmio original do banco" },
+          valorRodadaCalculado: { type: "string", description: "Valor após deduzir exceções" },
+          valorPremioCalculado: { type: "string", description: "Prêmio recalculado com base no valor deduzido" },
+          valorDeduzidoPorExcecoes: { type: "string" },
+          quantidadeExcecoes: { type: "number" },
+          apostasAfetadas: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: {
+                apostadorId: { type: "number" },
+                grupoId: { type: "number" },
+                valorUnitario: { type: "string" },
+              },
+            },
+          },
+        },
+      },
+    },
+  })
+  @ApiOperation({
+    summary: "V2: Buscar rodadas com valores calculados (considerando exceções)",
+    description:
+      "Retorna rodadas do campeonato com valores originais do banco E valores recalculados após deduzir apostas com exceções. NÃO modifica o banco de dados.",
+  })
+  async buscarRodadasCalculadas(
+    @Param("id") campeonatoId: string,
+  ): Promise<any[]> {
+    return await this.rodadaService.buscarRodadasComExcecoesCalculadas(
+      parseInt(campeonatoId),
+    );
+  }
+
   @Get("campeonato/:id/rodadas")
   @ApiOkResponse({ type: [Rodadas] })
   @ApiOperation({

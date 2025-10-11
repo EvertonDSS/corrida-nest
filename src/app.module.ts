@@ -4,6 +4,7 @@ import * as Services from "./services";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { AppDataSource } from "./data-source";
 import { Aposta } from "./entity/aposta.entity";
+import { Excecao } from "./entity/excecao.entity";
 import { Campeonato } from "./entity/campeonato.entity";
 import { Rodada } from "./entity/rodada.entity";
 import { Rodadas } from "./entity/rodadas.entity";
@@ -17,10 +18,11 @@ import { Tipo } from "./entity/tipo.entity";
     // Configura o TypeORM com todas as entidades
     TypeOrmModule.forRoot({
       ...AppDataSource.options,
-      entities: [Apostador, Aposta, Campeonato, Rodada, Rodadas, Cavalo, CavaloCampeonato, Tipo],
+      entities: [Apostador, Aposta, Excecao, Campeonato, Rodada, Rodadas, Cavalo, CavaloCampeonato, Tipo],
     }),
     TypeOrmModule.forFeature([
       Aposta,
+      Excecao,
       Cavalo,
       Apostador,
       Campeonato,
