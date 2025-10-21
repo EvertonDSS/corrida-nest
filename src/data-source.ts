@@ -15,12 +15,22 @@ const certPath = path.resolve(__dirname, "../certs");
 
 export const AppDataSource = new DataSource({
   type: "postgres",
-  host: "square-cloud-db-a3351b7b71d743b1a91df27cdad25eac.squareweb.app",
-  port: 7053,
+  host: "square-cloud-db-5f7fc35aec824eaf8faa4b4518907b79.squareweb.app",
+  port: 7068,
   username: "squarecloud",
-  password: "keExiI36dK12jQt1ABBlYOE2",
-  database: "Corrida",
-  entities: [Apostador, Aposta, Excecao, Campeonato, Rodada, Rodadas, Cavalo, CavaloCampeonato, Tipo],
+  password: "YlpqpZbevxvDgO439aLuNSte",
+  database: "corrida",
+  entities: [
+    Apostador,
+    Aposta,
+    Excecao,
+    Campeonato,
+    Rodada,
+    Rodadas,
+    Cavalo,
+    CavaloCampeonato,
+    Tipo,
+  ],
   migrations: [path.join(__dirname, "./migrations/*{.ts,.js}")],
   schema: "public",
   ssl: {
