@@ -10,6 +10,7 @@ import { Excecao } from "./entity/excecao.entity";
 import { Cavalo } from "./entity/cavalo.entity";
 import { CavaloCampeonato } from "./entity/cavalo-campeonato.entity";
 import { Tipo } from "./entity/tipo.entity";
+import { Finalista } from "./entity/finalista.entity";
 
 const certPath = path.resolve(__dirname, "../certs");
 
@@ -30,6 +31,7 @@ export const AppDataSource = new DataSource({
     Cavalo,
     CavaloCampeonato,
     Tipo,
+    Finalista,
   ],
   migrations: [path.join(__dirname, "./migrations/*{.ts,.js}")],
   schema: "public",

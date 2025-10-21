@@ -97,4 +97,81 @@ export class CampeonatoController {
       apostadorId,
     );
   }
+
+  @Get(":id/tipos/:tipoId/cavalos")
+  @ApiOkResponse({
+    description: "Cavalos e valores de um tipo específico",
+    schema: {
+      type: "object",
+      properties: {
+        tipoId: { type: "number" },
+        tipoNome: { type: "string" },
+        cavalos: {
+          type: "array",
+          items: {
+            type: "object",
+            properties: {
+              cavaloId: { type: "number" },
+              cavaloNome: { type: "string" },
+              numeroPareo: { type: "string" },
+              grupoId: { type: "number" },
+              valorTotal: { type: "string" },
+            },
+          },
+        },
+      },
+    },
+  })
+  @ApiOperation({
+    summary: "Buscar cavalos e valores de um tipo específico",
+    description:
+      "Retorna os cavalos de um campeonato para um tipo de aposta específico com seus valores totais apostados",
+  })
+  async buscarCavalosPorTipo(
+    @Param("id") campeonatoId: number,
+    @Param("tipoId") tipoId: number,
+  ): Promise<any> {
+    return await this.campeonatoService.buscarCavalosPorTipo(
+      campeonatoId,
+      tipoId,
+    );
+  }
+
+  @Get(":id/tipos")
+  @ApiOkResponse({
+    description: "Cavalos e valores agrupados por tipo de aposta",
+    schema: {
+      type: "array",
+      items: {
+        type: "object",
+        properties: {
+          tipoId: { type: "number" },
+          tipoNome: { type: "string" },
+          cavalos: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: {
+                cavaloId: { type: "number" },
+                cavaloNome: { type: "string" },
+                numeroPareo: { type: "string" },
+                grupoId: { type: "number" },
+                valorTotal: { type: "string" },
+              },
+            },
+          },
+        },
+      },
+    },
+  })
+  @ApiOperation({
+    summary: "Buscar cavalos e valores agrupados por tipo de aposta",
+    description:
+      "Retorna os cavalos de um campeonato com seus valores totais apostados, agrupados por tipo de aposta",
+  })
+  async buscarCavalosPorTipos(@Param("id") campeonatoId: number): Promise<any> {
+    return await this.campeonatoService.buscarCavalosAgrupadosPorTipo(
+      campeonatoId,
+    );
+  }
 }

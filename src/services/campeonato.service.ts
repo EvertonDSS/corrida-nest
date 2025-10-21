@@ -188,6 +188,121 @@ export class CampeonatoService {
     return apostasProcessadas.filter((aposta) => aposta !== null);
   }
 
+  async buscarCavalosAgrupadosPorTipo(campeonatoId: number): Promise<any> {
+    // Buscar todas as apostas do campeonato com suas relações
+    const apostas = await this.apostaRepository.find({
+      where: { campeonatoId },
+      relations: ["rodadas", "rodadas.tipo"],
+    });
+
+    if (!apostas || apostas.length === 0) {
+      throw new NotFoundException(
+        `Nenhuma aposta encontrada para o campeonato ${campeonatoId}`,
+      );
+    }
+
+    // Buscar todos os cavalos do campeonato
+    const cavalos = await this.dataSource.getRepository(CavaloCampeonato).find({
+      where: { campeonatoId },
+      relations: ["cavalo"],
+      order: { numeroPareo: "ASC" },
+    });
+
+    // Agrupar por tipoId
+    const agrupadoPorTipo: any = {};
+
+    for (const aposta of apostas) {
+      const tipoId = aposta.rodadas?.tipoId;
+      const tipoNome = aposta.rodadas?.tipo?.nome || "Sem tipo";
+
+      if (!tipoId) continue;
+
+      // Inicializar o grupo se não existir
+      if (!agrupadoPorTipo[tipoId]) {
+        agrupadoPorTipo[tipoId] = {
+          tipoId,
+          tipoNome,
+          cavalos: {},
+        };
+      }
+
+      // Buscar cavalos do grupo desta aposta
+      const cavalosDoGrupo = cavalos.filter(
+        (c) => c.grupoId === aposta.grupoId,
+      );
+
+      // Para cada cavalo do grupo, somar os valores
+      for (const cavaloCampeonato of cavalosDoGrupo) {
+        const cavaloId = cavaloCampeonato.cavaloId;
+        const cavaloNome = cavaloCampeonato.cavalo?.nome || "Desconhecido";
+        const numeroPareo = cavaloCampeonato.numeroPareo || "";
+        const grupoId = cavaloCampeonato.grupoId;
+
+        if (!cavaloId) continue;
+
+        // Criar chave única por cavalo E grupo
+        const chave = `${cavaloId}_${grupoId}`;
+
+        // Inicializar o cavalo se não existir
+        if (!agrupadoPorTipo[tipoId].cavalos[chave]) {
+          agrupadoPorTipo[tipoId].cavalos[chave] = {
+            cavaloId,
+            cavaloNome,
+            numeroPareo,
+            grupoId,
+            valorTotal: 0,
+          };
+        }
+
+        // Somar o valor da aposta
+        agrupadoPorTipo[tipoId].cavalos[chave].valorTotal += Number(
+          aposta.valorUnitario || 0,
+        );
+      }
+    }
+
+    // Converter o objeto em array e formatar
+    const resultado = Object.values(agrupadoPorTipo).map((tipo: any) => ({
+      tipoId: tipo.tipoId,
+      tipoNome: tipo.tipoNome,
+      cavalos: Object.values(tipo.cavalos)
+        .map((cavalo: any) => ({
+          cavaloId: cavalo.cavaloId,
+          cavaloNome: cavalo.cavaloNome,
+          numeroPareo: cavalo.numeroPareo,
+          grupoId: cavalo.grupoId,
+          valorTotal: Number(cavalo.valorTotal).toFixed(2),
+        }))
+        .sort((a: any, b: any) => a.numeroPareo.localeCompare(b.numeroPareo)),
+    }));
+
+    return resultado;
+  }
+
+  async buscarCavalosPorTipo(
+    campeonatoId: number,
+    tipoId: number,
+  ): Promise<any> {
+    // Reutilizar a lógica existente e filtrar pelo tipo
+    const todosOsTipos = await this.buscarCavalosAgrupadosPorTipo(campeonatoId);
+
+    // Converter tipoId para número para garantir comparação correta
+    const tipoIdNumber = Number(tipoId);
+
+    // Encontrar o tipo específico
+    const tipoEspecifico = todosOsTipos.find(
+      (t: any) => t.tipoId === tipoIdNumber,
+    );
+
+    if (!tipoEspecifico) {
+      throw new NotFoundException(
+        `Nenhuma aposta encontrada para o tipo ${tipoId} no campeonato ${campeonatoId}`,
+      );
+    }
+
+    return tipoEspecifico;
+  }
+
   private async buscarCavalosDoGrupo(
     campeonatoId: number,
     grupoId: number,

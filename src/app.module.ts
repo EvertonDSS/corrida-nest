@@ -12,13 +12,14 @@ import { Cavalo } from "./entity/cavalo.entity";
 import { Apostador } from "./entity/apostador.entity";
 import { CavaloCampeonato } from "./entity/cavalo-campeonato.entity";
 import { Tipo } from "./entity/tipo.entity";
+import { Finalista } from "./entity/finalista.entity";
 
 @Module({
   imports: [
     // Configura o TypeORM com todas as entidades
     TypeOrmModule.forRoot({
       ...AppDataSource.options,
-      entities: [Apostador, Aposta, Excecao, Campeonato, Rodada, Rodadas, Cavalo, CavaloCampeonato, Tipo],
+      entities: [Apostador, Aposta, Excecao, Campeonato, Rodada, Rodadas, Cavalo, CavaloCampeonato, Tipo, Finalista],
     }),
     TypeOrmModule.forFeature([
       Aposta,
@@ -30,6 +31,7 @@ import { Tipo } from "./entity/tipo.entity";
       Rodadas,
       CavaloCampeonato,
       Tipo,
+      Finalista,
     ]),
   ],
   controllers: Object.values(Controllers),

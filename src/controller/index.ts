@@ -7,3 +7,4 @@ export * from "./rodada.controller";
 export * from "./cleanup.controller";
 export * from "./cavalo-campeonato.controller";
 export * from "./tipo.controller";
+export * from "./finalista.controller";
