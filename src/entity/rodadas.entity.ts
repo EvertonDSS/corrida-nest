@@ -30,6 +30,9 @@ export class Rodadas extends BaseEntity {
   @Column("decimal", { precision: 10, scale: 2 })
   valorPremio: number = 0;
 
+  @Column("decimal", { precision: 10, scale: 2, nullable: true })
+  casa?: number;
+
   @OneToMany(() => Aposta, (aposta) => aposta.rodadas, { cascade: true })
   apostas?: Aposta[];
 

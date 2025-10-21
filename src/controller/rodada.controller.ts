@@ -51,6 +51,7 @@ export class RodadaController {
           valorRodada: 100,
           porcentagem: 10,
           tipoId: 1,
+          casa: 50,
         },
       },
     },
