@@ -1,10 +1,12 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, NotFoundException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { CreateApostaDto } from "src/dto/criar-aposta.dto";
+import { EditarApostaDto } from "src/dto/editar-aposta.dto";
 import { Aposta } from "src/entity/aposta.entity";
 import { Repository, DataSource } from "typeorm";
 import { CavaloCampeonato } from "src/entity/cavalo-campeonato.entity";
 import { Excecao } from "src/entity/excecao.entity";
+import { Rodadas } from "src/entity/rodadas.entity";
 
 @Injectable()
 export class ApostaService {
@@ -16,12 +18,7 @@ export class ApostaService {
 
   async buscarTodos(): Promise<any[]> {
     const apostas = await this.apostaRepository.find({
-      relations: [
-        "campeonato",
-        "apostador",
-        "rodadas",
-        "rodadas.rodada",
-      ],
+      relations: ["campeonato", "apostador", "rodadas", "rodadas.rodada"],
     });
 
     // Enriquecer cada aposta com informações dos cavalos filtrados por exceções
@@ -39,15 +36,10 @@ export class ApostaService {
     );
   }
 
-  async buscarPorId(id: number): Promise<any | null> {
+  async buscarPorId(id: number): Promise<any> {
     const aposta = await this.apostaRepository.findOne({
       where: { id },
-      relations: [
-        "campeonato",
-        "apostador",
-        "rodadas",
-        "rodadas.rodada",
-      ],
+      relations: ["campeonato", "apostador", "rodadas", "rodadas.rodada"],
     });
 
     if (!aposta) return null;
@@ -80,6 +72,51 @@ export class ApostaService {
     aposta.porcentagem = dto.porcentagem;
     aposta.rodadasId = dto.rodadasId;
     return this.apostaRepository.save(aposta);
+  }
+
+  async editar(id: number, dto: EditarApostaDto): Promise<Aposta> {
+    // Buscar aposta existente com relação da rodada
+    const aposta = await this.apostaRepository.findOne({
+      where: { id },
+      relations: ["rodadas"],
+    });
+
+    if (!aposta) {
+      throw new NotFoundException(`Aposta com id ${id} não encontrada`);
+    }
+
+    // Buscar rodada para pegar o valorPremio
+    const rodada = await this.dataSource.getRepository(Rodadas).findOne({
+      where: { id: aposta.rodadasId },
+    });
+
+    if (!rodada) {
+      throw new NotFoundException(
+        `Rodada com id ${aposta.rodadasId} não encontrada`,
+      );
+    }
+
+    // Atualizar porcentagem se fornecida
+    if (dto.porcentagem !== undefined) {
+      aposta.porcentagem = dto.porcentagem;
+    }
+
+    // Se valorUnitario foi fornecido, é o valor BASE (sem porcentagem aplicada)
+    // Aplicar porcentagem igual ao POST
+    if (dto.valorUnitario !== undefined) {
+      const porcentagem = aposta.porcentagem ?? 0;
+      aposta.valorUnitario = this.calcularPorcentagem(
+        porcentagem,
+        dto.valorUnitario,
+      );
+    }
+
+    // Calcular total baseado no valorPremio da rodada
+    // Se pegou 45%, recebe 45% do prêmio
+    const porcentagem = aposta.porcentagem ?? 0;
+    aposta.total = this.calcularPorcentagem(porcentagem, rodada.valorPremio);
+
+    return await this.apostaRepository.save(aposta);
   }
 
   async atualizar(aposta: Aposta): Promise<Aposta> {

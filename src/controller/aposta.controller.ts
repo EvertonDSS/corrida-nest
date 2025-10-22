@@ -1,23 +1,27 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpCode,
   NotFoundException,
   Param,
+  ParseIntPipe,
   Post,
+  Put,
 } from "@nestjs/common";
 import { ApostaService } from "../services/aposta.service";
 import { Aposta } from "src/entity/aposta.entity";
 import { ApiBody, ApiCreatedResponse, ApiOperation } from "@nestjs/swagger";
 import { CreateApostaDto } from "src/dto/criar-aposta.dto";
+import { EditarApostaDto } from "src/dto/editar-aposta.dto";
 
 @Controller("/aposta")
 export class ApostaController {
   constructor(private readonly apostaService: ApostaService) {}
 
   @Get()
-  async buscarTodos(): Promise<Aposta[]> {
+  async buscarTodos(): Promise<any[]> {
     return await this.apostaService.buscarTodos();
   }
 
@@ -30,8 +34,26 @@ export class ApostaController {
     return await this.apostaService.criar(dto);
   }
 
+  @Put(":id")
+  @HttpCode(200)
+  @ApiOperation({ summary: "Editar uma aposta" })
+  @ApiBody({ type: EditarApostaDto })
+  async editar(
+    @Param("id", ParseIntPipe) id: number,
+    @Body() dto: EditarApostaDto,
+  ): Promise<Aposta> {
+    return await this.apostaService.editar(id, dto);
+  }
+
+  @Delete(":id")
+  @HttpCode(204)
+  @ApiOperation({ summary: "Excluir uma aposta" })
+  async excluir(@Param("id", ParseIntPipe) id: number): Promise<void> {
+    await this.apostaService.deletar(id);
+  }
+
   @Get(":id")
-  async buscarPorId(@Param("id") id: number): Promise<Aposta> {
+  async buscarPorId(@Param("id", ParseIntPipe) id: number): Promise<any> {
     const aposta = await this.apostaService.buscarPorId(id);
     if (!aposta) {
       throw new NotFoundException("Aposta não encontrada");
